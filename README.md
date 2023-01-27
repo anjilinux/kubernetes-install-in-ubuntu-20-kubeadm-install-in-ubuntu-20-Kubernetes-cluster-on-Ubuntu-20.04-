@@ -11,7 +11,8 @@ Perform all the commands as root user unless otherwise specified
 Disable Firewall
 
 ufw disable
-
+systemctl stop firewalld 
+----------------
 Disable swap
 
 swapoff -a; sed -i '/swap/d' /etc/fstab
