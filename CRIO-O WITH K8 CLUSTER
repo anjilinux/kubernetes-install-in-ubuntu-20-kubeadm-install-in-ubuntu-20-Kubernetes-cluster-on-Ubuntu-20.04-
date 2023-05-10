@@ -1,0 +1,239 @@
+Install Kubernetes Cluster on Ubuntu 20.04 with kubeadm  with container RUNTIME INTERFACE CRI-O TYPE
+Container Runtimes
+
+    containerd
+    CRI-O       =====================  NOW  USE
+    Docker Engine
+    Mirantis Container Runtime
+
+How to Deploy Kubernetes with the CRI-O Container Runtime
+https://computingforgeeks.com/deploy-kubernetes-cluster-on-ubuntu-with-kubeadm/
+Install Kubernetes Cluster on Ubuntu 20.04 with kubeadm    =  NOTE: You have to choose one runtime at a time.=CRI-O
+NOTE: You have to choose one runtime      "Container runtime CRI-O  CRI-O"
+------------------------------------------------
+sudo apt update
+sudo apt -y full-upgrade
+[ -f /var/run/reboot-required ] && sudo reboot -f
+-------------------------------------
+sudo apt -y install curl apt-transport-https
+curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
+echo "deb https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list
+---------------------------------------------
+sudo apt update
+sudo apt -y install vim git curl wget kubelet kubeadm kubectl
+------------------------------------##############33
+root@lan:~#  kubectl version --client && kubeadm version
+WARNING: This version information is deprecated and will be replaced with the output from kubectl version --short.  Use --output=yaml|json to get the full version.
+Client Version: version.Info{Major:"1", Minor:"27", GitVersion:"v1.27.1", GitCommit:"4c9411232e10168d7b050c49a1b59f6df9d7ea4b", GitTreeState:"clean", BuildDate:"2023-04-14T13:21:19Z", GoVersion:"go1.20.3", Compiler:"gc", Platform:"linux/amd64"}
+Kustomize Version: v5.0.1
+kubeadm version: &version.Info{Major:"1", Minor:"27", GitVersion:"v1.27.1", GitCommit:"4c9411232e10168d7b050c49a1b59f6df9d7ea4b", GitTreeState:"clean", BuildDate:"2023-04-14T13:20:04Z", GoVersion:"go1.20.3", Compiler:"gc", Platform:"linux/amd64"}
+============================-----------------------
+sudo sed -i '/ swap / s/^\(.*\)$/#\1/g' /etc/fstab
+sudo swapoff -a
+sudo mount -a
+free -h
+----------------------------------
+sudo modprobe overlay
+sudo modprobe br_netfilter
+----------------------------------
+sudo tee /etc/sysctl.d/kubernetes.conf<<EOF
+net.bridge.bridge-nf-call-ip6tables = 1
+net.bridge.bridge-nf-call-iptables = 1
+net.ipv4.ip_forward = 1
+EOF
+
+sudo sysctl --system
+-------------------------------------"
+##########   Installing CRI-O  "/\\/\/\\\/\\//
+sudo modprobe overlay
+sudo modprobe br_netfilter
+-------------------------------
+sudo tee /etc/sysctl.d/kubernetes.conf<<EOF
+net.bridge.bridge-nf-call-ip6tables = 1
+net.bridge.bridge-nf-call-iptables = 1
+net.ipv4.ip_forward = 1
+EOF
+
+sudo sysctl --system
+--------------------------------
+sudo su -
+OS="xUbuntu_20.04"
+VERSION=1.26
+echo "deb https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/$OS/ /" > /etc/apt/sources.list.d/devel:kubic:libcontainers:stable.list
+echo "deb http://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable:/cri-o:/$VERSION/$OS/ /" > /etc/apt/sources.list.d/devel:kubic:libcontainers:stable:cri-o:$VERSION.list
+curl -L https://download.opensuse.org/repositories/devel:kubic:libcontainers:stable:cri-o:$VERSION/$OS/Release.key | apt-key add -
+curl -L https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/$OS/Release.key | apt-key add -
+-------------------------------------------------
+sudo apt update
+sudo apt install  -y cri-o cri-o-runc
+-------------------------------
+sudo sed -i 's/10.85.0.0/192.168.0.0/g' /etc/cni/net.d/100-crio-bridge.conf
+sudo sed -i 's/10.85.0.0/192.168.0.0/g' /etc/cni/net.d/100-crio-bridge.conflist
+-----------------------------
+sudo systemctl daemon-reload
+sudo systemctl restart crio
+sudo systemctl enable crio
+sudo systemctl status crio
+--------------------------------------
+lsmod | grep br_netfilter
+systemctl stop firewalld 
+sudo systemctl enable kubelet
+------------------------------------###############################  SMALL-STEPS-TEST CLUSTER WORKING OR NOT
+sudo kubeadm config images pull      OR OR  OR   
+
+### root@lan:~# cd /var/run/
+containers/        log/               shm/               user/
+crio/              motd.d/            snapd/             userns/
+gdm3/              openvpn-client/    systemd/        
+root@lan:/var/run/crio# ll
+total 4
+drwxr-xr-x  5 root root  140 May 10 12:54 ./
+drwxr-xr-x 42 root root 1100 May 10 12:54 ../
+srw-rw----  1 root root    0 May 10 12:54 crio.sock=
+drwxr-x---  2 root root   40 May 10 12:54 exec-pid-dir/
+drwxr-xr-x  2 root root   40 May 10 12:54 exits/
+drwx------  2 root root   40 May 10 12:54 seccomp/
+-rw-r--r--  1 root root   16 May 10 12:54 version   ## 
+
+sudo kubeadm config images pull --cri-socket unix:///var/run/crio/crio.sock
+
+root@lan:~# sudo kubeadm config images pull --cri-socket unix:///var/run/crio/crio.sock
+W0510 13:00:18.197448    8809 images.go:80] could not find officially supported version of etcd for Kubernetes v1.27.1, falling back to the nearest etcd version (3.5.7-0)
+[config/images] Pulled registry.k8s.io/kube-apiserver:v1.27.1
+[config/images] Pulled registry.k8s.io/kube-controller-manager:v1.27.1
+[config/images] Pulled registry.k8s.io/kube-scheduler:v1.27.1
+[config/images] Pulled registry.k8s.io/kube-proxy:v1.27.1
+[config/images] Pulled registry.k8s.io/pause:3.9
+[config/images] Pulled registry.k8s.io/etcd:3.5.7-0
+[config/images] Pulled registry.k8s.io/coredns/coredns:v1.10.1  "
+
+/\/\/\/\/\/\/  OR  OR  OR  DIRECT SINGLE STEP AT A TIME ################################
+
+Bootstrap without shared endpoint   To bootstrap a cluster without using DNS endpoint, run:
+sudo kubeadm init \
+  --pod-network-cidr=192.168.0.0/16 \
+  --cri-socket unix:///var/run/crio/crio.sock              """
+
+========  OR  OR  =  Bootstrap with shared endpoint (DNS name for control plane API)  ###############333
+ Set cluster endpoint DNS name or add record to /etc/hosts file. 
+root@lan:~# sudo nano  /etc/hosts
+
+root@lan:~# cat   /etc/hosts
+127.0.0.1	localhost
+127.0.1.1	lan
+
+192.168.122.136   www.facebook.gamil.com
+
+# The following lines are desirable for IPv6 capable hosts
+::1     ip6-localhost ip6-loopback
+
+== == = =-- - -= =    
+ sudo kubeadm init \
+  --pod-network-cidr=192.168.0.0/16 \
+  --upload-certs \
+  --control-plane-endpoint=www.facebook.gamil.com
+
+root@lan:~# sudo kubeadm init \
+>   --pod-network-cidr=192.168.0.0/16 \
+>   --upload-certs \
+>   --control-plane-endpoint=www.facebook.gamil.com
+[init] Using Kubernetes version: v1.27.1
+[preflight] Running pre-flight checks
+[preflight] Pulling images required for setting up a Kubernetes cluster
+[preflight] This might take a minute or two, depending on the speed of your internet connection
+[preflight] You can also perform this action in beforehand using 'kubeadm config images pull'
+W0510 13:14:24.771488    9529 images.go:80] could not find officially supported version of etcd for Kubernetes v1.27.1, falling back to the nearest etcd version (3.5.7-0)
+[certs] Using certificateDir folder "/etc/kubernetes/pki"
+[certs] Generating "ca" certificate and key
+[certs] Generating "apiserver" certificate and key
+[certs] apiserver serving cert is signed for DNS names [kubernetes kubernetes.default kubernetes.default.svc kubernetes.default.svc.cluster.local lan www.facebook.gamil.com] and IPs [10.96.0.1 192.168.122.136]
+[certs] Generating "apiserver-kubelet-client" certificate and key
+[certs] Generating "front-proxy-ca" certificate and key
+[certs] Generating "front-proxy-client" certificate and key
+[certs] Generating "etcd/ca" certificate and key
+[certs] Generating "etcd/server" certificate and key
+[certs] etcd/server serving cert is signed for DNS names [lan localhost] and IPs [192.168.122.136 127.0.0.1 ::1]
+[certs] Generating "etcd/peer" certificate and key
+[certs] etcd/peer serving cert is signed for DNS names [lan localhost] and IPs [192.168.122.136 127.0.0.1 ::1]
+[certs] Generating "etcd/healthcheck-client" certificate and key
+[certs] Generating "apiserver-etcd-client" certificate and key
+[certs] Generating "sa" key and public key
+[kubeconfig] Using kubeconfig folder "/etc/kubernetes"
+[kubeconfig] Writing "admin.conf" kubeconfig file
+[kubeconfig] Writing "kubelet.conf" kubeconfig file
+[kubeconfig] Writing "controller-manager.conf" kubeconfig file
+[kubeconfig] Writing "scheduler.conf" kubeconfig file
+[kubelet-start] Writing kubelet environment file with flags to file "/var/lib/kubelet/kubeadm-flags.env"
+[kubelet-start] Writing kubelet configuration to file "/var/lib/kubelet/config.yaml"
+[kubelet-start] Starting the kubelet
+[control-plane] Using manifest folder "/etc/kubernetes/manifests"
+[control-plane] Creating static Pod manifest for "kube-apiserver"
+[control-plane] Creating static Pod manifest for "kube-controller-manager"
+[control-plane] Creating static Pod manifest for "kube-scheduler"
+[etcd] Creating static Pod manifest for local etcd in "/etc/kubernetes/manifests"
+W0510 13:14:27.829937    9529 images.go:80] could not find officially supported version of etcd for Kubernetes v1.27.1, falling back to the nearest etcd version (3.5.7-0)
+[wait-control-plane] Waiting for the kubelet to boot up the control plane as static Pods from directory "/etc/kubernetes/manifests". This can take up to 4m0s
+[apiclient] All control plane components are healthy after 8.519645 seconds
+[upload-config] Storing the configuration used in ConfigMap "kubeadm-config" in the "kube-system" Namespace
+[kubelet] Creating a ConfigMap "kubelet-config" in namespace kube-system with the configuration for the kubelets in the cluster
+[upload-certs] Storing the certificates in Secret "kubeadm-certs" in the "kube-system" Namespace
+[upload-certs] Using certificate key:
+d868849dfe5bd5346e68168cf35e921c218cefc25effe8737341baa1f07108a0
+[mark-control-plane] Marking the node lan as control-plane by adding the labels: [node-role.kubernetes.io/control-plane node.kubernetes.io/exclude-from-external-load-balancers]
+[mark-control-plane] Marking the node lan as control-plane by adding the taints [node-role.kubernetes.io/control-plane:NoSchedule]
+[bootstrap-token] Using token: vjm5vc.wkxsb3vl1q7bcgvf
+[bootstrap-token] Configuring bootstrap tokens, cluster-info ConfigMap, RBAC Roles
+[bootstrap-token] Configured RBAC rules to allow Node Bootstrap tokens to get nodes
+[bootstrap-token] Configured RBAC rules to allow Node Bootstrap tokens to post CSRs in order for nodes to get long term certificate credentials
+[bootstrap-token] Configured RBAC rules to allow the csrapprover controller automatically approve CSRs from a Node Bootstrap Token
+[bootstrap-token] Configured RBAC rules to allow certificate rotation for all node client certificates in the cluster
+[bootstrap-token] Creating the "cluster-info" ConfigMap in the "kube-public" namespace
+[kubelet-finalize] Updating "/etc/kubernetes/kubelet.conf" to point to a rotatable kubelet client certificate and key
+[addons] Applied essential addon: CoreDNS
+[addons] Applied essential addon: kube-proxy
+
+Your Kubernetes control-plane has initialized successfully!
+
+To start using your cluster, you need to run the following as a regular user:
+
+  mkdir -p $HOME/.kube
+  sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+  sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+Alternatively, if you are the root user, you can run:
+
+  export KUBECONFIG=/etc/kubernetes/admin.conf
+
+You should now deploy a pod network to the cluster.
+Run "kubectl apply -f [podnetwork].yaml" with one of the options listed at:
+  https://kubernetes.io/docs/concepts/cluster-administration/addons/
+
+You can now join any number of the control-plane node running the following command on each as root:
+
+  kubeadm join www.facebook.gamil.com:6443 --token vjm5vc.wkxsb3vl1q7bcgvf \
+	--discovery-token-ca-cert-hash sha256:703bd03c54c79871ef3035628293617123f3226268f6fbca606cce1a9d825758 \
+	--control-plane --certificate-key d868849dfe5bd5346e68168cf35e921c218cefc25effe8737341baa1f07108a0
+
+Please note that the certificate-key gives access to cluster sensitive data, keep it secret!
+As a safeguard, uploaded-certs will be deleted in two hours; If necessary, you can use
+"kubeadm init phase upload-certs --upload-certs" to reload certs afterward.
+
+Then you can join any number of worker nodes by running the following on each as root:
+
+kubeadm join www.facebook.gamil.com:6443 --token vjm5vc.wkxsb3vl1q7bcgvf \
+	--discovery-token-ca-cert-hash sha256:703bd03c54c79871ef3035628293617123f3226268f6fbca606cce1a9d825758 
+################################################++++++++++++++++++++++++++++++++++++
+root@lan:~# kubectl cluster-info 
+
+Kubernetes control plane is running at https://www.facebook.gamil.com:6443
+
+CoreDNS is running at https://www.facebook.gamil.com:6443/api/v1/namespaces/kube-system/services/kube-dns:dns/proxy
+
+To further debug and diagnose cluster problems, use 'kubectl cluster-info dump'.
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+root@lan:~# kubectl apply -f https://github.com/weaveworks/weave/releases/download/v2.8.1/weave-daemonset-k8s.yaml
+
+root@lan:~# kubectl get nodes  -o wide  --show-labels
+NAME   STATUS   ROLES           AGE     VERSION   INTERNAL-IP       EXTERNAL-IP   OS-IMAGE             KERNEL-VERSION      CONTAINER-RUNTIME   LABELS
+lan    Ready    control-plane   7m13s   v1.27.1   192.168.122.136   <none>        Ubuntu 20.04.6 LTS   5.15.0-71-generic   cri-o://1.26.3      beta.kubernetes.io/arch=amd64,beta.kubernetes.io/os=linux,
