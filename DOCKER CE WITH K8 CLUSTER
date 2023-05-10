@@ -1,0 +1,186 @@
+https://computingforgeeks.com/deploy-kubernetes-cluster-on-ubuntu-with-kubeadm/#comments
+{{{{NOTE  NOTE  KUBEADM SUPPORTED container runtime DOCKER ENGINE UP to 1.18xx from "1.23.xx "only  }}}{{{}}}}}
+Install Kubernetes Cluster on Ubuntu 20.04 with kubeadm  with container RUNTIME INTERFACE CONTAINERD  TYPE
+Container Runtimes  CONTAINERD WITH K8-CLUSTER  SUCCESS
+
+    containerd  
+    CRI-O    
+    Docker Engine   =====================  NOW  USE
+    Mirantis Container Runtime
+How to Deploy Kubernetes with the   containerd Container Runtime
+
+{{{{{OTE  NOTE  KUBEADM SUPPORTED container runtime DOCKER ENGINE UP to 1.18xx from "1.23.xx "only  }}}{{{}}}}}
+
+https://computingforgeeks.com/deploy-kubernetes-cluster-on-ubuntu-with-kubeadm/#comments
+Install Kubernetes Cluster on Ubuntu 20.04 with kubeadm
+
+-------------
+sudo apt update
+sudo apt -y full-upgrade
+[ -f /var/run/reboot-required ] && sudo reboot -f
+-------------------------------------
+sudo apt -y install curl apt-transport-https
+curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
+echo "deb https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list
+-------------------------------------------
+systemctl stop firewalld
+-----------------------------
+{{{{{{OTE  NOTE  KUBEADM SUPPORTED container runtime DOCKER ENGINE UP to 1.18xx from "1.23.xx "only  }}}{{{}}}}}
+
+sudo apt -y install kubelet=1.23.1-00 kubeadm=1.23.1-00  kubectl=1.23.1-00
+sudo apt-mark hold kubelet kubeadm kubectl
+---------------------------------------------------
+lan@lan:~$  kubectl version --client && kubeadm version
+Client Version: version.Info{Major:"1", Minor:"23", GitVersion:"v1.23.1", GitCommit:"86ec240af8cbd1b60bcc4c03c20da9b98005b92e", GitTreeState:"clean", BuildDate:"2021-12-16T11:41:01Z", GoVersion:"go1.17.5", Compiler:"gc", Platform:"linux/amd64"}
+kubeadm version: &version.Info{Major:"1", Minor:"23", GitVersion:"v1.23.1", GitCommit:"86ec240af8cbd1b60bcc4c03c20da9b98005b92e", GitTreeState:"clean", BuildDate:"2021-12-16T11:39:51Z", GoVersion:"go1.17.5", Compiler:"gc", Platform:"linux/amd64"}
+--------------------------
+sudo sed -i '/ swap / s/^\(.*\)$/#\1/g' /etc/fstab
+
+sudo swapoff -a
+sudo mount -a
+free -h
+--------------------------
+sudo modprobe overlay
+sudo modprobe br_netfilter
+--------------------
+sudo tee /etc/sysctl.d/kubernetes.conf<<EOF
+net.bridge.bridge-nf-call-ip6tables = 1
+net.bridge.bridge-nf-call-iptables = 1
+net.ipv4.ip_forward = 1
+EOF
+
+sudo sysctl --system
+-----------------  ###########
+ Install Container runtime  = docker  engine 
+  NOTE: You have to choose one runtime at a time.  Installing Docker CE runtime: "
+sudo apt update
+sudo apt install -y curl gnupg2 software-properties-common apt-transport-https ca-certificates
+
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+
+sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+sudo apt update
+
+sudo apt install -y containerd.io docker-ce docker-ce-cli
+----------------------------------------
+sudo tee /etc/docker/daemon.json <<EOF
+{
+  "exec-opts": ["native.cgroupdriver=systemd"],
+  "log-driver": "json-file",
+  "log-opts": {
+    "max-size": "100m"
+  },
+  "storage-driver": "overlay2"
+}
+EOF
+-----------------------------
+sudo systemctl daemon-reload 
+sudo systemctl restart docker
+sudo systemctl enable docker
+-----------------------------
+ lsmod | grep br_netfilter
+ sudo systemctl enable kubelet
+ ------------------------"
+  ------------------------------------###############################  SMALL-STEPS-TEST CLUSTER WORKING OR NOT
+sudo kubeadm config images pull  OR  OR   OR   
+
+sudo kubeadm config images pull --cri-socket unix:///run/cri-dockerd.sock 
+
+root@lan:~# sudo kubeadm config images pull 
+I0510 15:40:35.549236   11296 version.go:255] remote version is much newer: v1.27.1; falling back to: stable-1.23
+[config/images] Pulled k8s.gcr.io/kube-apiserver:v1.23.17
+[config/images] Pulled k8s.gcr.io/kube-controller-manager:v1.23.17
+[config/images] Pulled k8s.gcr.io/kube-scheduler:v1.23.17
+[config/images] Pulled k8s.gcr.io/kube-proxy:v1.23.17
+[config/images] Pulled k8s.gcr.io/pause:3.6
+[config/images] Pulled k8s.gcr.io/etcd:3.5.1-0
+[config/images] Pulled k8s.gcr.io/coredns/coredns:v1.8.6
+
+root@lan:~# sudo kubeadm init \
+>   --pod-network-cidr=192.168.0.0/16
+I0510 15:45:08.187538   11683 version.go:255] remote version is much newer: v1.27.1; falling back to: stable-1.23
+[init] Using Kubernetes version: v1.23.17
+[preflight] Running pre-flight checks
+	[WARNING SystemVerification]: this Docker version is not on the list of validated versions: 23.0.6. Latest validated version: 20.10
+[preflight] Pulling images required for setting up a Kubernetes cluster
+[preflight] This might take a minute or two, depending on the speed of your internet connection
+[preflight] You can also perform this action in beforehand using 'kubeadm config images pull'
+[certs] Using certificateDir folder "/etc/kubernetes/pki"
+[certs] Generating "ca" certificate and key
+[certs] Generating "apiserver" certificate and key
+[certs] apiserver serving cert is signed for DNS names [kubernetes kubernetes.default kubernetes.default.svc kubernetes.default.svc.cluster.local lan] and IPs [10.96.0.1 192.168.122.58]
+[certs] Generating "apiserver-kubelet-client" certificate and key
+[certs] Generating "front-proxy-ca" certificate and key
+[certs] Generating "front-proxy-client" certificate and key
+[certs] Generating "etcd/ca" certificate and key
+[certs] Generating "etcd/server" certificate and key
+[certs] etcd/server serving cert is signed for DNS names [lan localhost] and IPs [192.168.122.58 127.0.0.1 ::1]
+[certs] Generating "etcd/peer" certificate and key
+[certs] etcd/peer serving cert is signed for DNS names [lan localhost] and IPs [192.168.122.58 127.0.0.1 ::1]
+[certs] Generating "etcd/healthcheck-client" certificate and key
+[certs] Generating "apiserver-etcd-client" certificate and key
+[certs] Generating "sa" key and public key
+[kubeconfig] Using kubeconfig folder "/etc/kubernetes"
+[kubeconfig] Writing "admin.conf" kubeconfig file
+[kubeconfig] Writing "kubelet.conf" kubeconfig file
+[kubeconfig] Writing "controller-manager.conf" kubeconfig file
+[kubeconfig] Writing "scheduler.conf" kubeconfig file
+[kubelet-start] Writing kubelet environment file with flags to file "/var/lib/kubelet/kubeadm-flags.env"
+[kubelet-start] Writing kubelet configuration to file "/var/lib/kubelet/config.yaml"
+[kubelet-start] Starting the kubelet
+[control-plane] Using manifest folder "/etc/kubernetes/manifests"
+[control-plane] Creating static Pod manifest for "kube-apiserver"
+[control-plane] Creating static Pod manifest for "kube-controller-manager"
+[control-plane] Creating static Pod manifest for "kube-scheduler"
+[etcd] Creating static Pod manifest for local etcd in "/etc/kubernetes/manifests"
+[wait-control-plane] Waiting for the kubelet to boot up the control plane as static Pods from directory "/etc/kubernetes/manifests". This can take up to 4m0s
+[apiclient] All control plane components are healthy after 6.004959 seconds
+[upload-config] Storing the configuration used in ConfigMap "kubeadm-config" in the "kube-system" Namespace
+[kubelet] Creating a ConfigMap "kubelet-config-1.23" in namespace kube-system with the configuration for the kubelets in the cluster
+NOTE: The "kubelet-config-1.23" naming of the kubelet ConfigMap is deprecated. Once the UnversionedKubeletConfigMap feature gate graduates to Beta the default name will become just "kubelet-config". Kubeadm upgrade will handle this transition transparently.
+[upload-certs] Skipping phase. Please see --upload-certs
+[mark-control-plane] Marking the node lan as control-plane by adding the labels: [node-role.kubernetes.io/master(deprecated) node-role.kubernetes.io/control-plane node.kubernetes.io/exclude-from-external-load-balancers]
+[mark-control-plane] Marking the node lan as control-plane by adding the taints [node-role.kubernetes.io/master:NoSchedule]
+[bootstrap-token] Using token: dzqg0h.u90m8ijc5p098wp0
+[bootstrap-token] Configuring bootstrap tokens, cluster-info ConfigMap, RBAC Roles
+[bootstrap-token] configured RBAC rules to allow Node Bootstrap tokens to get nodes
+[bootstrap-token] configured RBAC rules to allow Node Bootstrap tokens to post CSRs in order for nodes to get long term certificate credentials
+[bootstrap-token] configured RBAC rules to allow the csrapprover controller automatically approve CSRs from a Node Bootstrap Token
+[bootstrap-token] configured RBAC rules to allow certificate rotation for all node client certificates in the cluster
+[bootstrap-token] Creating the "cluster-info" ConfigMap in the "kube-public" namespace
+[kubelet-finalize] Updating "/etc/kubernetes/kubelet.conf" to point to a rotatable kubelet client certificate and key
+[addons] Applied essential addon: CoreDNS
+[addons] Applied essential addon: kube-proxy
+
+Your Kubernetes control-plane has initialized successfully!
+
+To start using your cluster, you need to run the following as a regular user:
+
+  mkdir -p $HOME/.kube
+  sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+  sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+Alternatively, if you are the root user, you can run:
+
+  export KUBECONFIG=/etc/kubernetes/admin.conf
+
+You should now deploy a pod network to the cluster.
+Run "kubectl apply -f [podnetwork].yaml" with one of the options listed at:
+  https://kubernetes.io/docs/concepts/cluster-administration/addons/
+
+Then you can join any number of worker nodes by running the following on each as root:
+
+kubeadm join 192.168.122.58:6443 --token dzqg0h.u90m8ijc5p098wp0 \
+	--discovery-token-ca-cert-hash sha256:be06545027c17c8ae2ce30a118069caf71ccabb04bde24eb0bbd596df5d3de0b 
+++++++++++++++++++++++++++++++++++++++++
+ kubectl apply -f https://github.com/weaveworks/weave/releases/download/v2.8.1/weave-daemonset-k8s.yaml
+
+   root@lan:~# kubectl cluster-info 
+Kubernetes control plane is running at https://192.168.122.58:6443
+CoreDNS is running at https://192.168.122.58:6443/api/v1/namespaces/kube-system/services/kube-dns:dns/proxy
+
+To further debug and diagnose cluster problems, use 'kubectl cluster-info dump'.
+
+root@lan:~# kubectl get nodes  -o wide  --show-labels
+NAME   STATUS   ROLES                  AGE     VERSION   INTERNAL-IP      EXTERNAL-IP   OS-IMAGE             KERNEL-VERSION      CONTAINER-RUNTIME   LABELS
+lan    Ready    control-plane,master   3m16s   v1.23.1   192.168.122.58   <none>        Ubuntu 20.04.6 LTS   5.15.0-71-generic   docker://23.0.6     beta.kuberne
